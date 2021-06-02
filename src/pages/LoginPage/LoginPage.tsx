@@ -15,6 +15,7 @@ import {
 } from "@chakra-ui/form-control";
 import { useState } from "react";
 import { useToast } from "@chakra-ui/toast";
+import { useFirebase } from "providers/FirebaseProvider";
 
 const validationSchema = Yup.object().shape({
   email: Yup.string()
@@ -26,6 +27,8 @@ const validationSchema = Yup.object().shape({
 const LoginPage = () => {
   const [isOpen, setOpen] = useState<Boolean>(false);
   const toast = useToast();
+  const { login, setTags, currentUser, loginWithFacebook } = useFirebase();
+
   const {
     setFieldValue,
     errors,
@@ -39,26 +42,28 @@ const LoginPage = () => {
   }>({
     initialValues: { email: "", password: "" },
     validationSchema: validationSchema,
-    onSubmit: async () => {
+    onSubmit: async (values) => {
       validateForm();
-      console.dir(isValid);
-      if (!isValid) {
-        console.dir("elo");
-        toast({
-          title: `
-          ${errors.email?.toString()} 
-          ${errors.password}
-          `,
-          status: "error",
-          isClosable: true,
-        });
+      if (isValid) {
+        login(values.email, values.password)
+          .then(() => {
+            console.log("siema");
+            console.dir(currentUser);
+            setTags(["bitcoin", "doge"]);
+          })
+          .catch(() => {
+            toast({
+              description: "Incorrect credensials provided!",
+              status: "error",
+              isClosable: true,
+            });
+          });
       }
     },
   });
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setFieldValue(e.target.id, e.target.value, false).then(() => {
-      console.dir(e.target.id);
       validateField(e.target.id);
     });
   };
@@ -93,7 +98,7 @@ const LoginPage = () => {
               <FaTwitter color="#1196F5" />
               <Box ml="15px"> Sign up with Twitter</Box>
             </Button>
-            <Button variant="outline">
+            <Button onClick={loginWithFacebook} variant="outline">
               <FaFacebook color="#1196F5" />
               <Box ml="15px">Sign up with Facebook</Box>
             </Button>
