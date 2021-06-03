@@ -27,7 +27,13 @@ const validationSchema = Yup.object().shape({
 const LoginPage = () => {
   const [isOpen, setOpen] = useState<Boolean>(false);
   const toast = useToast();
-  const { login, setTags, currentUser, loginWithFacebook } = useFirebase();
+  const {
+    loginWithTwitter,
+    setTags,
+    currentUser,
+    loginWithFacebook,
+    loginWithEmail,
+  } = useFirebase();
 
   const {
     setFieldValue,
@@ -45,7 +51,7 @@ const LoginPage = () => {
     onSubmit: async (values) => {
       validateForm();
       if (isValid) {
-        login(values.email, values.password)
+        loginWithEmail(values.email, values.password)
           .then(() => {
             console.log("siema");
             console.dir(currentUser);
@@ -94,13 +100,13 @@ const LoginPage = () => {
                 Enter your info to get started
               </Heading>
             </Box>
-            <Button variant="outline">
+            <Button onClick={loginWithTwitter} variant="outline">
               <FaTwitter color="#1196F5" />
-              <Box ml="15px"> Sign up with Twitter</Box>
+              <Box ml="15px"> Sign in with Twitter</Box>
             </Button>
             <Button onClick={loginWithFacebook} variant="outline">
               <FaFacebook color="#1196F5" />
-              <Box ml="15px">Sign up with Facebook</Box>
+              <Box ml="15px">Sign in with Facebook</Box>
             </Button>
             <DividerWithText mt="6">OR</DividerWithText>
             <Flex justifyContent="space-between" flexDir="column" h="280px">

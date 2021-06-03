@@ -10,7 +10,7 @@ import "firebase/auth";
 
 interface IFirebaseContext {
   currentUser: firebase.User | null;
-  login: (
+  loginWithEmail: (
     email: string,
     password: string
   ) => Promise<firebase.auth.UserCredential>;
@@ -25,6 +25,7 @@ interface IFirebaseContext {
     | undefined
   >;
   loginWithFacebook: () => Promise<void>;
+  loginWithTwitter: () => Promise<void>;
 }
 const firebaseConfig = {
   apiKey: "AIzaSyDbKv6Wvvd1Ilgl0MxfgJYoR5OXITAwphY",
@@ -40,6 +41,7 @@ const firebaseInit = firebase.initializeApp(firebaseConfig);
 const auth = firebaseInit.auth();
 const firestore = firebaseInit.firestore();
 const facebookProvider = new firebase.auth.FacebookAuthProvider();
+const twitterProvider = new firebase.auth.TwitterAuthProvider();
 
 const FirebaseProvider = ({ children }: { children: ReactElement }) => {
   const [currentUser, setCurrentUser] = useState<firebase.User | null>(null);
@@ -48,32 +50,15 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
     auth.signInWithEmailAndPassword(email, password);
 
   const loginWithFacebook = async () => {
-    return auth
-      .signInWithPopup(facebookProvider)
-      .then((result) => {
-        /** @type {firebase.auth.OAuthCredential} */
-        var credential = result.credential;
+    return auth.signInWithPopup(facebookProvider).then((result) => {
+      setCurrentUser(result.user);
+    });
+  };
 
-        // The signed-in user info.
-        var user = result.user;
-        setCurrentUser(result.user);
-
-        // This gives you a Facebook Access Token. You can use it to access the Facebook API.
-        // var accessToken = credential.accessToken;
-
-        // ...
-      })
-      .catch((error) => {
-        // Handle Errors here.
-        var errorCode = error.code;
-        var errorMessage = error.message;
-        // The email of the user's account used.
-        var email = error.email;
-        // The firebase.auth.AuthCredential type that was used.
-        var credential = error.credential;
-
-        // ...
-      });
+  const loginWithTwitter = async () => {
+    return auth.signInWithPopup(twitterProvider).then((result) => {
+      setCurrentUser(result.user);
+    });
   };
 
   const register = async (email: string, password: string) =>
@@ -95,11 +80,12 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
   return (
     <FirebaseContext.Provider
       value={{
-        login: loginWithEmail,
+        loginWithEmail,
         register,
         currentUser,
         setTags,
         loginWithFacebook,
+        loginWithTwitter,
       }}
     >
       {children}
