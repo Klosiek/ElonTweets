@@ -15,6 +15,7 @@ import {
 } from "@chakra-ui/form-control";
 import { useState } from "react";
 import { useToast } from "@chakra-ui/toast";
+import { useFirebase } from "providers/FirebaseProvider";
 
 const validationSchema = Yup.object().shape({
   email: Yup.string()
@@ -24,8 +25,10 @@ const validationSchema = Yup.object().shape({
 });
 
 const LoginPage = () => {
-  const [isOpen, setOpen] = useState<Boolean>(false);
+  const [isVisible, setVisible] = useState<Boolean>(false);
   const toast = useToast();
+  const { loginWithTwitter, loginWithFacebook, loginWithEmail } = useFirebase();
+
   const {
     setFieldValue,
     errors,
@@ -39,18 +42,15 @@ const LoginPage = () => {
   }>({
     initialValues: { email: "", password: "" },
     validationSchema: validationSchema,
-    onSubmit: async () => {
+    onSubmit: async (values) => {
       validateForm();
-      console.dir(isValid);
-      if (!isValid) {
-        console.dir("elo");
-        toast({
-          title: `
-          ${errors.email?.toString()} 
-          ${errors.password}
-          `,
-          status: "error",
-          isClosable: true,
+      if (isValid) {
+        loginWithEmail(values.email, values.password).catch(() => {
+          toast({
+            description: "Incorrect credensials provided!",
+            status: "error",
+            isClosable: true,
+          });
         });
       }
     },
@@ -58,7 +58,6 @@ const LoginPage = () => {
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setFieldValue(e.target.id, e.target.value, false).then(() => {
-      console.dir(e.target.id);
       validateField(e.target.id);
     });
   };
@@ -89,13 +88,35 @@ const LoginPage = () => {
                 Enter your info to get started
               </Heading>
             </Box>
-            <Button variant="outline">
+            <Button
+              onClick={() =>
+                loginWithTwitter().catch(() => {
+                  toast({
+                    description: "Can't login with twitter your account!",
+                    status: "error",
+                    isClosable: true,
+                  });
+                })
+              }
+              variant="outline"
+            >
               <FaTwitter color="#1196F5" />
-              <Box ml="15px"> Sign up with Twitter</Box>
+              <Box ml="15px"> Sign in with Twitter</Box>
             </Button>
-            <Button variant="outline">
+            <Button
+              onClick={() =>
+                loginWithFacebook().catch(() => {
+                  toast({
+                    description: "Can't login with facebook your account!",
+                    status: "error",
+                    isClosable: true,
+                  });
+                })
+              }
+              variant="outline"
+            >
               <FaFacebook color="#1196F5" />
-              <Box ml="15px">Sign up with Facebook</Box>
+              <Box ml="15px">Sign in with Facebook</Box>
             </Button>
             <DividerWithText mt="6">OR</DividerWithText>
             <Flex justifyContent="space-between" flexDir="column" h="280px">
@@ -130,9 +151,11 @@ const LoginPage = () => {
                     <IconButton
                       bg="transparent"
                       variant="ghost"
-                      aria-label={isOpen ? "Mask password" : "Reveal password"}
-                      icon={isOpen ? <AiFillEyeInvisible /> : <AiFillEye />}
-                      onClick={() => setOpen(!isOpen)}
+                      aria-label={
+                        isVisible ? "Mask password" : "Reveal password"
+                      }
+                      icon={isVisible ? <AiFillEyeInvisible /> : <AiFillEye />}
+                      onClick={() => setVisible(!isVisible)}
                     />
                   </InputRightElement>
                   <Input
@@ -140,7 +163,7 @@ const LoginPage = () => {
                     onChange={onChange}
                     placeholder="Password"
                     name="password"
-                    type={isOpen ? "text" : "password"}
+                    type={isVisible ? "text" : "password"}
                     autoComplete="current-password"
                     required
                     isInvalid={!!errors.password}
