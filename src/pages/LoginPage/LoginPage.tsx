@@ -25,15 +25,9 @@ const validationSchema = Yup.object().shape({
 });
 
 const LoginPage = () => {
-  const [isOpen, setOpen] = useState<Boolean>(false);
+  const [isVisible, setVisible] = useState<Boolean>(false);
   const toast = useToast();
-  const {
-    loginWithTwitter,
-    setTags,
-    currentUser,
-    loginWithFacebook,
-    loginWithEmail,
-  } = useFirebase();
+  const { loginWithTwitter, loginWithFacebook, loginWithEmail } = useFirebase();
 
   const {
     setFieldValue,
@@ -51,19 +45,13 @@ const LoginPage = () => {
     onSubmit: async (values) => {
       validateForm();
       if (isValid) {
-        loginWithEmail(values.email, values.password)
-          .then(() => {
-            console.log("siema");
-            console.dir(currentUser);
-            setTags(["bitcoin", "doge"]);
-          })
-          .catch(() => {
-            toast({
-              description: "Incorrect credensials provided!",
-              status: "error",
-              isClosable: true,
-            });
+        loginWithEmail(values.email, values.password).catch(() => {
+          toast({
+            description: "Incorrect credensials provided!",
+            status: "error",
+            isClosable: true,
           });
+        });
       }
     },
   });
@@ -100,11 +88,33 @@ const LoginPage = () => {
                 Enter your info to get started
               </Heading>
             </Box>
-            <Button onClick={loginWithTwitter} variant="outline">
+            <Button
+              onClick={() =>
+                loginWithTwitter().catch(() => {
+                  toast({
+                    description: "Can't login with twitter your account!",
+                    status: "error",
+                    isClosable: true,
+                  });
+                })
+              }
+              variant="outline"
+            >
               <FaTwitter color="#1196F5" />
               <Box ml="15px"> Sign in with Twitter</Box>
             </Button>
-            <Button onClick={loginWithFacebook} variant="outline">
+            <Button
+              onClick={() =>
+                loginWithFacebook().catch(() => {
+                  toast({
+                    description: "Can't login with facebook your account!",
+                    status: "error",
+                    isClosable: true,
+                  });
+                })
+              }
+              variant="outline"
+            >
               <FaFacebook color="#1196F5" />
               <Box ml="15px">Sign in with Facebook</Box>
             </Button>
@@ -141,9 +151,11 @@ const LoginPage = () => {
                     <IconButton
                       bg="transparent"
                       variant="ghost"
-                      aria-label={isOpen ? "Mask password" : "Reveal password"}
-                      icon={isOpen ? <AiFillEyeInvisible /> : <AiFillEye />}
-                      onClick={() => setOpen(!isOpen)}
+                      aria-label={
+                        isVisible ? "Mask password" : "Reveal password"
+                      }
+                      icon={isVisible ? <AiFillEyeInvisible /> : <AiFillEye />}
+                      onClick={() => setVisible(!isVisible)}
                     />
                   </InputRightElement>
                   <Input
@@ -151,7 +163,7 @@ const LoginPage = () => {
                     onChange={onChange}
                     placeholder="Password"
                     name="password"
-                    type={isOpen ? "text" : "password"}
+                    type={isVisible ? "text" : "password"}
                     autoComplete="current-password"
                     required
                     isInvalid={!!errors.password}

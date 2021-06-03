@@ -26,6 +26,8 @@ interface IFirebaseContext {
   >;
   loginWithFacebook: () => Promise<void>;
   loginWithTwitter: () => Promise<void>;
+  logout: () => Promise<void>;
+  loading: boolean;
 }
 const firebaseConfig = {
   apiKey: "AIzaSyDbKv6Wvvd1Ilgl0MxfgJYoR5OXITAwphY",
@@ -44,6 +46,7 @@ const facebookProvider = new firebase.auth.FacebookAuthProvider();
 const twitterProvider = new firebase.auth.TwitterAuthProvider();
 
 const FirebaseProvider = ({ children }: { children: ReactElement }) => {
+  const [loading, setLoading] = useState<boolean>(true);
   const [currentUser, setCurrentUser] = useState<firebase.User | null>(null);
 
   const loginWithEmail = async (email: string, password: string) =>
@@ -61,6 +64,10 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
     });
   };
 
+  const logout = async () => {
+    return auth.signOut();
+  };
+
   const register = async (email: string, password: string) =>
     auth.createUserWithEmailAndPassword(email, password);
 
@@ -73,7 +80,9 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
 
   useEffect(() => {
     auth.onAuthStateChanged((user) => {
+      console.dir(user?.email);
       setCurrentUser(user);
+      setLoading(false);
     });
   }, []);
 
@@ -86,6 +95,8 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
         setTags,
         loginWithFacebook,
         loginWithTwitter,
+        logout,
+        loading,
       }}
     >
       {children}
