@@ -1,29 +1,14 @@
-import {
-  createContext,
-  ReactElement,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, ReactElement, useContext, useEffect, useState } from "react";
 import firebase from "firebase";
 import "firebase/auth";
 
 interface IFirebaseContext {
   currentUser: firebase.User | null;
-  loginWithEmail: (
-    email: string,
-    password: string
-  ) => Promise<firebase.auth.UserCredential>;
-  register: (
-    email: string,
-    password: string
-  ) => Promise<firebase.auth.UserCredential>;
+  loginWithEmail: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<firebase.auth.UserCredential>;
   setTags: (
     tags: string[]
-  ) => Promise<
-    | firebase.firestore.DocumentReference<firebase.firestore.DocumentData>
-    | undefined
-  >;
+  ) => Promise<firebase.firestore.DocumentReference<firebase.firestore.DocumentData> | undefined>;
   loginWithFacebook: () => Promise<void>;
   loginWithTwitter: () => Promise<void>;
   logout: () => Promise<void>;
@@ -50,7 +35,9 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
   const [currentUser, setCurrentUser] = useState<firebase.User | null>(null);
 
   const loginWithEmail = async (email: string, password: string) =>
-    auth.signInWithEmailAndPassword(email, password);
+    auth.signInWithEmailAndPassword(email, password).then((result) => {
+      result.user?.emailVerified ? setCurrentUser(result.user) : setCurrentUser(null);
+    });
 
   const loginWithFacebook = async () => {
     return auth.signInWithPopup(facebookProvider).then((result) => {
@@ -68,19 +55,17 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
     return auth.signOut();
   };
 
-  const register = async (email: string, password: string) =>
-    auth.createUserWithEmailAndPassword(email, password);
+  const register = async (email: string, password: string) => auth.createUserWithEmailAndPassword(email, password);
 
   const setTags = async (tags: string[]) => {
-    if (currentUser)
-      return firestore
-        .collection("users")
-        .add({ userId: currentUser?.uid, tags });
+    if (currentUser) return firestore.collection("users").add({ userId: currentUser?.uid, tags });
   };
 
   useEffect(() => {
     auth.onAuthStateChanged((user) => {
       console.dir(user?.email);
+      console.dir(currentUser?.providerId);
+      console.dir(currentUser?.providerData);
       setCurrentUser(user);
       setLoading(false);
     });
