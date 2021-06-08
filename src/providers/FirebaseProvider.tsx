@@ -1,18 +1,25 @@
 import { createContext, ReactElement, useContext, useEffect, useState } from "react";
 import firebase from "firebase";
 import "firebase/auth";
+import { Notifications } from "components/Navbar/Navbar";
+
+interface UserData {
+  tags: string[];
+  notifications: Notifications;
+}
 
 interface IFirebaseContext {
   currentUser: firebase.User | null;
   loginWithEmail: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<firebase.auth.UserCredential>;
-  setTags: (
-    tags: string[]
-  ) => Promise<firebase.firestore.DocumentReference<firebase.firestore.DocumentData> | undefined>;
+  setTags: (tags: string[]) => Promise<void | firebase.firestore.DocumentReference<firebase.firestore.DocumentData>>;
+  setNotifications: (notifications: Notifications) => Promise<void>;
+  getUserData: () => Promise<firebase.firestore.DocumentSnapshot<UserData> | undefined>;
   loginWithFacebook: () => Promise<void>;
   loginWithTwitter: () => Promise<void>;
   logout: () => Promise<void>;
   loading: boolean;
+  loadingUserData: boolean;
 }
 const firebaseConfig = {
   apiKey: "AIzaSyDbKv6Wvvd1Ilgl0MxfgJYoR5OXITAwphY",
@@ -30,7 +37,21 @@ const firestore = firebaseInit.firestore();
 const facebookProvider = new firebase.auth.FacebookAuthProvider();
 const twitterProvider = new firebase.auth.TwitterAuthProvider();
 
+var userDataConveter = {
+  toFirestore: (user: any) => {
+    return {
+      uid: user.uid,
+      tags: user.tags,
+    };
+  },
+  fromFirestore: (snapshot: any, options: any) => {
+    const data: UserData = snapshot.data(options);
+    return data;
+  },
+};
+
 const FirebaseProvider = ({ children }: { children: ReactElement }) => {
+  const [loadingUserData, setLoadingUserData] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentUser, setCurrentUser] = useState<firebase.User | null>(null);
 
@@ -58,30 +79,53 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
   const register = async (email: string, password: string) => auth.createUserWithEmailAndPassword(email, password);
 
   const setTags = async (tags: string[]) => {
-    if (currentUser) return firestore.collection("users").add({ userId: currentUser?.uid, tags });
+    if (currentUser) {
+      return firestore.collection("users").doc(currentUser.uid).update({ tags });
+    }
+  };
+
+  const setNotifications = async (notifications: Notifications) => {
+    if (currentUser) {
+      return firestore.collection("users").doc(currentUser.uid).update({ notifications });
+    }
+  };
+
+  const getUserData = async () => {
+    if (currentUser) {
+      return firestore
+        .collection("users")
+        .doc(currentUser.uid)
+        .withConverter(userDataConveter)
+        .get()
+        .then((data) => {
+          setLoadingUserData(false);
+          return data;
+        });
+    }
   };
 
   useEffect(() => {
     auth.onAuthStateChanged((user) => {
-      console.dir(user?.email);
-      console.dir(currentUser?.providerId);
-      console.dir(currentUser?.providerData);
       setCurrentUser(user);
       setLoading(false);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <FirebaseContext.Provider
       value={{
-        loginWithEmail,
-        register,
+        loading,
+        loadingUserData,
         currentUser,
-        setTags,
+        loginWithEmail,
         loginWithFacebook,
         loginWithTwitter,
+        register,
+        setTags,
+        setNotifications,
+        getUserData,
         logout,
-        loading,
       }}
     >
       {children}
