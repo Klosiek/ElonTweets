@@ -5,15 +5,18 @@ export const theme = extendTheme({
   styles: {
     global: (props) => ({
       body: {
-        bg: mode("#f7fafc", "#1A202C")(props),
+        bg: mode("#F7FAFC", "#1A202C")(props),
+        minH: "100vh",
+        overflowX: "hidden",
       },
     }),
   },
   colors: {
     panelDark: "#2D3748",
+    panelSecondaryDark: "#171923",
     panelLight: "#FFFFFF",
-    secondaryTextDark: "#A0AEC0",
-    secondaryTextLight: "",
+    panelSecondaryLight: "#F7FAFC",
+    secondaryText: "#A0AEC0",
     primary: "#63B3ED",
     secondary: "#D65DB1",
     bgPrimary: "#1A202C",

@@ -6,7 +6,10 @@ const PrivateRoute = (props: RouteProps) => {
   const { currentUser, loading } = useFirebase();
   console.dir(currentUser);
 
-  return !loading && !currentUser ? (
+  return !loading &&
+    // !currentUser &&
+    !currentUser?.emailVerified &&
+    currentUser?.providerData[0]?.providerId !== ("facebook.com" || "twitter.com") ? (
     <Redirect to={RoutesEnum.Login} />
   ) : (
     <Route {...props} />

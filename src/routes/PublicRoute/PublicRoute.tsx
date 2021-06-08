@@ -6,7 +6,8 @@ const PublicRoute = (props: RouteProps) => {
   const { currentUser, loading } = useFirebase();
   console.dir(currentUser);
 
-  return !loading && currentUser ? (
+  return !loading &&
+    (currentUser?.providerData[0]?.providerId === ("facebook.com" || "twitter.com") || currentUser?.emailVerified) ? (
     <Redirect to={RoutesEnum.Home} />
   ) : (
     <Route {...props} />
