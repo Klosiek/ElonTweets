@@ -6,6 +6,7 @@ import { Notifications } from "components/Navbar/Navbar";
 interface UserData {
   tags: string[];
   notifications: Notifications;
+  currentToken: string[];
 }
 
 interface IFirebaseContext {
@@ -54,6 +55,11 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
   const [loadingUserData, setLoadingUserData] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentUser, setCurrentUser] = useState<firebase.User | null>(null);
+  const messaging = firebase.messaging();
+
+  messaging.onMessage((payload) => {
+    console.dir(payload);
+  });
 
   const loginWithEmail = async (email: string, password: string) =>
     auth.signInWithEmailAndPassword(email, password).then((result) => {
@@ -90,6 +96,24 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
     }
   };
 
+  const setToken = async (currentToken: string, user: firebase.User) => {
+    if (user?.uid) {
+      getUserData().then((userData) => {
+        const data = userData?.data();
+        let newTokens: string[] = [];
+        if (data?.currentToken) {
+          if (data?.currentToken.length >= 3) {
+            newTokens = [currentToken, data.currentToken[0], data.currentToken[1]];
+          } else {
+            newTokens = [currentToken, ...data.currentToken];
+          }
+        }
+        newTokens = newTokens.length > 0 ? newTokens : [currentToken];
+        return firestore.collection("users").doc(user.uid).update({ tokens: newTokens });
+      });
+    }
+  };
+
   const getUserData = async () => {
     if (currentUser) {
       return firestore
@@ -108,7 +132,35 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
     auth.onAuthStateChanged((user) => {
       setCurrentUser(user);
       setLoading(false);
+
+      if (user) {
+        firestore
+          .collection("users")
+          .doc(user?.uid)
+          .get()
+          .then((x) => {
+            if (!x.exists) {
+              firestore.collection("users").doc(user?.uid).set({});
+            }
+          });
+
+        Notification.requestPermission()
+          .then(() => {
+            console.log("Notification permission granted.");
+            return messaging.getToken();
+          })
+          .then((token) => {
+            if (token) {
+              setToken(token, user);
+              console.dir(token);
+            }
+          })
+          .catch(function (err) {
+            console.log("Unable to get permission to notify.", err);
+          });
+      }
     });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
