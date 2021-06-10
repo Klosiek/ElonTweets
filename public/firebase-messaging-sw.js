@@ -20,6 +20,7 @@ messaging.onBackgroundMessage((payload) => {
   const notificationOptions = {
     body: payload.data.body,
     icon: "./filtrelon.png",
+    vibrate: [200, 100, 200, 100, 200, 100, 200],
   };
 
   self.addEventListener("notificationclick", function (event) {

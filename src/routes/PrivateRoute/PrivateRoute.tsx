@@ -7,7 +7,9 @@ const PrivateRoute = (props: RouteProps) => {
 
   return !loading &&
     !currentUser?.emailVerified &&
-    currentUser?.providerData[0]?.providerId !== ("facebook.com" || "twitter.com") ? (
+    !["facebook.com", "twitter.com"].includes(
+      currentUser?.providerData[0]?.providerId ? currentUser?.providerData[0]?.providerId : ""
+    ) ? (
     <Redirect to={RoutesEnum.Login} />
   ) : (
     <Route {...props} />

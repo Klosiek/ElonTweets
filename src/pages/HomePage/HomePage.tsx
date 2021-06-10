@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { FiPlus } from "react-icons/fi";
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/tabs";
 import { Skeleton, SkeletonText } from "@chakra-ui/skeleton";
+import SetsList from "components/SetsList";
 
 const HomePage = () => {
   const [tags, setLocalTags] = useState<string[]>([]);
@@ -66,8 +67,8 @@ const HomePage = () => {
               </Tab>
             </TabList>
             <Flex h="100%" p={[null, "48px"]}>
-              <TabPanels p={[null, "10px"]} rounded={[null, "xl"]} h="100%" bgColor={mode("panelLight", "panelDark")}>
-                <TabPanel>
+              <TabPanels>
+                <TabPanel p={[null, "10px"]} rounded={[null, "xl"]} h="100%" bgColor={mode("panelLight", "panelDark")}>
                   <Tag colorScheme="cyan" w="100%">
                     <TagLeftIcon
                       onClick={() => {
@@ -122,7 +123,7 @@ const HomePage = () => {
                   </Flex>
                 </TabPanel>
                 <TabPanel>
-                  <p>sets here someday!</p>
+                  <SetsList />
                 </TabPanel>
               </TabPanels>
             </Flex>

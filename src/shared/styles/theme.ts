@@ -7,7 +7,6 @@ export const theme = extendTheme({
       body: {
         bg: mode("#F7FAFC", "#1A202C")(props),
         minH: "100vh",
-        overflowX: "hidden",
       },
     }),
   },

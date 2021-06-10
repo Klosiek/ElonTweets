@@ -1,23 +1,20 @@
 import { createContext, ReactElement, useContext, useEffect, useState } from "react";
 import firebase from "firebase";
 import "firebase/auth";
-import { Notifications } from "components/Navbar/Navbar";
 
 interface UserData {
   tags: string[];
-  notifications: Notifications;
   currentToken: string[];
 }
 
 interface IFirebaseContext {
   currentUser: firebase.User | null;
-  loginWithEmail: (email: string, password: string) => Promise<void>;
+  loginWithEmail: (email: string, password: string) => Promise<firebase.auth.UserCredential>;
   register: (email: string, password: string) => Promise<firebase.auth.UserCredential>;
   setTags: (tags: string[]) => Promise<void | firebase.firestore.DocumentReference<firebase.firestore.DocumentData>>;
-  setNotifications: (notifications: Notifications) => Promise<void>;
   getUserData: () => Promise<firebase.firestore.DocumentSnapshot<UserData> | undefined>;
-  loginWithFacebook: () => Promise<void>;
-  loginWithTwitter: () => Promise<void>;
+  loginWithFacebook: () => Promise<firebase.auth.UserCredential>;
+  loginWithTwitter: () => Promise<firebase.auth.UserCredential>;
   logout: () => Promise<void>;
   loading: boolean;
   loadingUserData: boolean;
@@ -61,21 +58,16 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
     console.dir(payload);
   });
 
-  const loginWithEmail = async (email: string, password: string) =>
-    auth.signInWithEmailAndPassword(email, password).then((result) => {
-      result.user?.emailVerified ? setCurrentUser(result.user) : setCurrentUser(null);
-    });
+  const loginWithEmail = async (email: string, password: string) => {
+    return auth.signInWithEmailAndPassword(email, password);
+  };
 
   const loginWithFacebook = async () => {
-    return auth.signInWithPopup(facebookProvider).then((result) => {
-      setCurrentUser(result.user);
-    });
+    return auth.signInWithPopup(facebookProvider);
   };
 
   const loginWithTwitter = async () => {
-    return auth.signInWithPopup(twitterProvider).then((result) => {
-      setCurrentUser(result.user);
-    });
+    return auth.signInWithPopup(twitterProvider);
   };
 
   const logout = async () => {
@@ -87,12 +79,6 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
   const setTags = async (tags: string[]) => {
     if (currentUser) {
       return firestore.collection("users").doc(currentUser.uid).update({ tags });
-    }
-  };
-
-  const setNotifications = async (notifications: Notifications) => {
-    if (currentUser) {
-      return firestore.collection("users").doc(currentUser.uid).update({ notifications });
     }
   };
 
@@ -132,6 +118,7 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
     auth.onAuthStateChanged((user) => {
       setCurrentUser(user);
       setLoading(false);
+      console.dir(user);
 
       if (user) {
         firestore
@@ -175,7 +162,6 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
         loginWithTwitter,
         register,
         setTags,
-        setNotifications,
         getUserData,
         logout,
       }}
