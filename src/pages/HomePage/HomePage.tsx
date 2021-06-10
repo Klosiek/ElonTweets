@@ -4,8 +4,11 @@ import Navbar from "components/Navbar";
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/tabs";
 import SetsList from "components/SetsList";
 import TagsList from "components/TagsList";
+import Intro from "components/Intro";
+import { useFirebase } from "providers/FirebaseProvider";
 
 const HomePage = () => {
+  const { isNewUser } = useFirebase();
   return (
     <Box>
       <Navbar></Navbar>
@@ -48,6 +51,7 @@ const HomePage = () => {
           </Tabs>
         </Box>
       </Flex>
+      {isNewUser && <Intro />}
     </Box>
   );
 };

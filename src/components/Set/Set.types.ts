@@ -1,3 +1,3 @@
-import { Set } from "shared/types";
+import * as SharedTypes from "shared/types";
 
-export interface Props extends Set {}
+export interface Props extends SharedTypes.Set {}

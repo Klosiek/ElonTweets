@@ -1,9 +1,9 @@
 import { Flex } from "@chakra-ui/layout";
 import Set from "components/Set";
-import * as sharedTypes from "shared/types";
+import * as SharedTypes from "shared/types";
 
 const SetsList = () => {
-  const setsList: sharedTypes.Set[] = [
+  const setsList: SharedTypes.Set[] = [
     {
       title: "Crypto",
       img: "https://cdn.pixabay.com/photo/2019/06/23/19/15/bitcoin-4294492_1280.png",

@@ -1,23 +1,19 @@
 import { createContext, ReactElement, useContext, useEffect, useState } from "react";
 import firebase from "firebase";
 import "firebase/auth";
-
-interface UserData {
-  tags: string[];
-  currentToken: string[];
-}
-
+import * as SharedTypes from "shared/types";
 interface IFirebaseContext {
   currentUser: firebase.User | null;
   loginWithEmail: (email: string, password: string) => Promise<firebase.auth.UserCredential>;
   register: (email: string, password: string) => Promise<firebase.auth.UserCredential>;
   setTags: (tags: string[]) => Promise<void | firebase.firestore.DocumentReference<firebase.firestore.DocumentData>>;
-  getUserData: () => Promise<firebase.firestore.DocumentSnapshot<UserData> | undefined>;
+  getUserData: () => Promise<firebase.firestore.DocumentSnapshot<SharedTypes.User> | undefined>;
   loginWithFacebook: () => Promise<firebase.auth.UserCredential>;
   loginWithTwitter: () => Promise<firebase.auth.UserCredential>;
   logout: () => Promise<void>;
   loading: boolean;
   loadingUserData: boolean;
+  isNewUser: boolean;
 }
 const firebaseConfig = {
   apiKey: "AIzaSyDbKv6Wvvd1Ilgl0MxfgJYoR5OXITAwphY",
@@ -43,12 +39,13 @@ var userDataConveter = {
     };
   },
   fromFirestore: (snapshot: any, options: any) => {
-    const data: UserData = snapshot.data(options);
+    const data: SharedTypes.User = snapshot.data(options);
     return data;
   },
 };
 
 const FirebaseProvider = ({ children }: { children: ReactElement }) => {
+  const [isNewUser, setIsNewUser] = useState<boolean>(true);
   const [loadingUserData, setLoadingUserData] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentUser, setCurrentUser] = useState<firebase.User | null>(null);
@@ -59,15 +56,15 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
   });
 
   const loginWithEmail = async (email: string, password: string) => {
-    return auth.signInWithEmailAndPassword(email, password);
+    return await auth.signInWithEmailAndPassword(email, password);
   };
 
   const loginWithFacebook = async () => {
-    return auth.signInWithPopup(facebookProvider);
+    return await auth.signInWithPopup(facebookProvider);
   };
 
   const loginWithTwitter = async () => {
-    return auth.signInWithPopup(twitterProvider);
+    return await auth.signInWithPopup(twitterProvider);
   };
 
   const logout = async () => {
@@ -118,9 +115,8 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
     auth.onAuthStateChanged((user) => {
       setCurrentUser(user);
       setLoading(false);
-      console.dir(user);
-
       if (user) {
+        // setIsNewUser(user.metadata.creationTime === user.metadata.lastSignInTime);
         firestore
           .collection("users")
           .doc(user?.uid)
@@ -157,6 +153,7 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
         loading,
         loadingUserData,
         currentUser,
+        isNewUser,
         loginWithEmail,
         loginWithFacebook,
         loginWithTwitter,
