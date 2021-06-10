@@ -1,11 +1,9 @@
-import { Button } from "@chakra-ui/button";
-import { Image } from "@chakra-ui/image";
-import { Box, Flex, Heading, HStack, Text } from "@chakra-ui/layout";
+import { Flex } from "@chakra-ui/layout";
 import Set from "components/Set";
 import * as sharedTypes from "shared/types";
 
 const SetsList = () => {
-  const defaultSets: sharedTypes.Set[] = [
+  const setsList: sharedTypes.Set[] = [
     {
       title: "Crypto",
       img: "https://cdn.pixabay.com/photo/2019/06/23/19/15/bitcoin-4294492_1280.png",
@@ -30,8 +28,8 @@ const SetsList = () => {
   ];
   return (
     <Flex justifyContent="space-evenly" flexWrap="wrap">
-      {defaultSets.map((set) => (
-        <Set {...set} />
+      {setsList.map((set) => (
+        <Set key={set.title} {...set} />
       ))}
     </Flex>
   );
