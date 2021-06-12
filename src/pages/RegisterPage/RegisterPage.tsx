@@ -12,6 +12,7 @@ import { useFormik } from "formik";
 import { useToast } from "@chakra-ui/toast";
 import { RoutesEnum } from "shared/enums";
 import { useHistory } from "react-router";
+import ParseErrorMessage from "shared/ParseErrorMessage";
 
 const validationSchema = Yup.object().shape({
   email: Yup.string().email("The email is incorrect").required("Please enter your email"),
@@ -25,7 +26,7 @@ const RegisterPage = () => {
   const history = useHistory();
   const [isVisible, setVisible] = useState<Boolean>(false);
   const toast = useToast();
-  const { loginWithEmail, register } = useFirebase();
+  const { register } = useFirebase();
   const { setFieldValue, errors, validateField, validateForm, isValid, submitForm } = useFormik<{
     email: string;
     password: string;
@@ -38,18 +39,28 @@ const RegisterPage = () => {
       if (isValid) {
         register(values.email, values.password)
           .then((res) => {
-            res.user?.sendEmailVerification();
-            toast({
-              description: "You have to confirm your email adress before loggin in",
-              isClosable: true,
-              status: "success",
-              onCloseComplete: () => history.push(RoutesEnum.Login),
-            });
+            res.user
+              ?.sendEmailVerification()
+              .then(() => {
+                toast({
+                  description: "You have to confirm your email adress before loggin in",
+                  isClosable: true,
+                  status: "success",
+                  onCloseComplete: () => history.push(RoutesEnum.Login),
+                });
+              })
+              .catch((err) => {
+                toast({
+                  description: ParseErrorMessage(err),
+                  isClosable: true,
+                  status: "error",
+                });
+              });
           })
           .catch((err) => {
-            console.dir(err);
             toast({
-              description: "Unable connect to server!",
+              description: ParseErrorMessage(err),
+              isClosable: true,
               status: "error",
             });
           });
@@ -70,16 +81,18 @@ const RegisterPage = () => {
       <Flex>
         <Box rounded="lg" shadow="lg" maxW="xl" mx="auto" p={12} bg={mode("panelLight", "panelDark")}>
           <Flex justifyContent="space-between" flexDir="column" h="xl">
-            <Heading textAlign="left" size="md">
-              ElonTweets
-            </Heading>
             <Box>
-              <Heading textAlign="center" fontWeight="extrabold" size="xl">
-                Welcome to ElonTweets
+              <Heading textAlign="left" size="md">
+                Filtrelon
               </Heading>
-              <Heading color="secondaryTextDark" textAlign="left" size="sm">
-                Enter your info to get started
-              </Heading>
+              <Box>
+                <Heading textAlign="center" fontWeight="extrabold" size="xl">
+                  Welcome to Filtrelon
+                </Heading>
+                <Heading color="secondaryTextDark" textAlign="left" size="sm">
+                  Enter your info to get started
+                </Heading>
+              </Box>
             </Box>
             <Flex justifyContent="space-between" flexDir="column" h="280px">
               <FormControl h="140px" isInvalid={!!errors.email}>
@@ -124,6 +137,7 @@ const RegisterPage = () => {
                 <FormErrorMessage>{errors.password}</FormErrorMessage>
               </FormControl>
               <FormControl>
+                <FormLabel>Repeat assword</FormLabel>
                 <InputGroup>
                   <InputRightElement>
                     <IconButton
@@ -148,6 +162,8 @@ const RegisterPage = () => {
                 </InputGroup>
                 <FormErrorMessage>{errors.repeatPassword}</FormErrorMessage>
               </FormControl>
+            </Flex>
+            <Flex flexDir="column">
               <Button onClick={submitForm} colorScheme="blue" size="lg" fontSize="md" disabled={!isValid}>
                 Sign in
               </Button>

@@ -17,16 +17,16 @@ const Navbar = () => {
         Filtrelon
       </Heading>
       <Menu>
-        <MenuButton _focus={{ border: "none" }}>
-          <IconButton
-            aria-label="settings"
-            icon={
-              <Flex justifyContent="center" alignItems="center" w="100%" h="100%">
-                <FcSettings size="32px" />
-              </Flex>
-            }
-          />
-        </MenuButton>
+        <MenuButton
+          as={IconButton}
+          _focus={{ border: "none" }}
+          aria-label="settings"
+          icon={
+            <Flex justifyContent="center" alignItems="center" w="100%" h="100%">
+              <FcSettings size="32px" />
+            </Flex>
+          }
+        ></MenuButton>
         <MenuList>
           <Flex ml="12px" mr="12px" alignItems="center" justifyContent="space-between">
             Color mode

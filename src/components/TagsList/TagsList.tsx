@@ -1,16 +1,16 @@
-import { Input } from "@chakra-ui/input";
+import { Input, InputGroup, InputLeftElement } from "@chakra-ui/input";
 import { Box, Flex } from "@chakra-ui/layout";
 import { SkeletonText } from "@chakra-ui/skeleton";
-import { Tag, TagCloseButton, TagLabel, TagLeftIcon } from "@chakra-ui/tag";
+import { IconButton } from "@chakra-ui/react";
+import { Tag, TagCloseButton, TagLabel } from "@chakra-ui/tag";
 import { useFirebase } from "providers/FirebaseProvider";
 import { useEffect, useState } from "react";
 import { FiPlus } from "react-icons/fi";
 
 const TagsList = () => {
-  const { setTags, getUserData, loadingUserData } = useFirebase();
+  const { setTags, getUserData, loadingUserData, currentUser } = useFirebase();
   const [tags, setLocalTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState<string>("");
-
   const addNewTag = (tag: string) => {
     const newTags = [...tags, tag];
     setLocalTags(newTags);
@@ -24,18 +24,46 @@ const TagsList = () => {
   };
 
   useEffect(() => {
-    getUserData().then((doc) => {
-      if (doc?.exists) {
-        const userData = doc.data();
-        if (userData?.tags) setLocalTags(userData.tags);
-      }
-    });
+    if (currentUser) {
+      getUserData(currentUser?.uid).then((doc) => {
+        if (doc?.exists) {
+          const userData = doc.data();
+          if (userData?.tags) setLocalTags(userData.tags);
+        }
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <Box>
-      <Tag colorScheme="cyan" w="100%">
+      <InputGroup>
+        <InputLeftElement
+          color="gray.300"
+          fontSize="1.2em"
+          children={<IconButton aria-label="plus" icon={<FiPlus color="green.500" />} />}
+          onClick={() => {
+            if (!tags.includes(newTag) && newTag) {
+              addNewTag(newTag);
+              setNewTag("");
+            }
+          }}
+        />
+        <Input
+          textAlign="center"
+          placeholder="Tag"
+          w="sm"
+          onKeyDown={(key) => {
+            if (key.key === "Enter") {
+              if (!tags.includes(newTag) && newTag) {
+                addNewTag(newTag);
+                setNewTag("");
+              }
+            }
+          }}
+        />
+      </InputGroup>
+      {/* <Tag colorScheme="cyan">
         <TagLeftIcon
           onClick={() => {
             if (!tags.includes(newTag) && newTag) {
@@ -49,7 +77,7 @@ const TagsList = () => {
           <FiPlus size="24px" />
         </TagLeftIcon>
 
-        <TagLabel w="100%">
+        <TagLabel>
           <Input
             size="md"
             onKeyDown={(key) => {
@@ -64,7 +92,7 @@ const TagsList = () => {
             onChange={(value) => setNewTag(value.currentTarget.value)}
           ></Input>
         </TagLabel>
-      </Tag>
+      </Tag> */}
 
       <Flex flexWrap="wrap" p={[null, "8px"]}>
         {false ? (

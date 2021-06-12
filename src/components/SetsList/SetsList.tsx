@@ -6,21 +6,21 @@ const SetsList = () => {
   const setsList: SharedTypes.Set[] = [
     {
       title: "Crypto",
-      img: "https://cdn.pixabay.com/photo/2019/06/23/19/15/bitcoin-4294492_1280.png",
+      img: "https://firebasestorage.googleapis.com/v0/b/filtrelon.appspot.com/o/sets%2Fcrypto.webp?alt=media&token=5a83378d-558f-44c8-af57-770f50fb79c9",
       tags: ["bitcoin"],
       topic:
         "Wanna be updated on Cryptospace and don't want to miss any Elon's post? Subscribe to that topic so we will notify you when it happens!",
     },
     {
       title: "SpaceX",
-      img: "https://bloximages.chicago2.vip.townnews.com/wacotrib.com/content/tncms/assets/v3/editorial/5/47/547d2f0e-b222-11e3-be8d-0019bb2963f4/532e2b45e8b23.preview-500.png?crop=500%2C500%2C0%2C1&resize=1200%2C1200&order=crop%2Cresize",
+      img: "https://firebasestorage.googleapis.com/v0/b/filtrelon.appspot.com/o/sets%2Fspacex.png?alt=media&token=070989db-e5a8-4fa6-a15c-2c449a6e5056",
       tags: ["spacex"],
       topic:
         "Wanna be updated with SpaceX and don't want to miss any Elon's post? Subscribe to that topic so we will notify you when it happens!",
     },
     {
       title: "Tesla",
-      img: "https://upload.wikimedia.org/wikipedia/commons/e/e8/Tesla_logo.png",
+      img: "https://firebasestorage.googleapis.com/v0/b/filtrelon.appspot.com/o/sets%2Ftesla.png?alt=media&token=d77177f1-c893-4946-b1b2-14bf4bfda167",
       tags: ["tesla"],
       topic:
         "Wanna be updated with Tesla and don't want to miss any Elon's post? Subscribe to that topic so we will notify you when it happens!",

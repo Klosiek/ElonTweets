@@ -6,9 +6,11 @@ import SetsList from "components/SetsList";
 import TagsList from "components/TagsList";
 import Intro from "components/Intro";
 import { useFirebase } from "providers/FirebaseProvider";
+import { useMediaQuery } from "@chakra-ui/react";
 
 const HomePage = () => {
   const { isNewUser } = useFirebase();
+  const isMobile = useMediaQuery("(max-width: 968px)");
   return (
     <Box>
       <Navbar></Navbar>
@@ -51,7 +53,7 @@ const HomePage = () => {
           </Tabs>
         </Box>
       </Flex>
-      {isNewUser && <Intro />}
+      {isNewUser && !isMobile && <Intro />}
     </Box>
   );
 };

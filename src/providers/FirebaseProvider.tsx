@@ -5,11 +5,15 @@ import * as SharedTypes from "shared/types";
 interface IFirebaseContext {
   currentUser: firebase.User | null;
   loginWithEmail: (email: string, password: string) => Promise<firebase.auth.UserCredential>;
-  register: (email: string, password: string) => Promise<firebase.auth.UserCredential>;
-  setTags: (tags: string[]) => Promise<void | firebase.firestore.DocumentReference<firebase.firestore.DocumentData>>;
-  getUserData: () => Promise<firebase.firestore.DocumentSnapshot<SharedTypes.User> | undefined>;
   loginWithFacebook: () => Promise<firebase.auth.UserCredential>;
   loginWithTwitter: () => Promise<firebase.auth.UserCredential>;
+  register: (email: string, password: string) => Promise<firebase.auth.UserCredential>;
+  resetUserPassword: (email: string) => Promise<void>;
+  getUserData: (uid: string) => Promise<firebase.firestore.DocumentSnapshot<SharedTypes.UserData>>;
+  setTags: (tags: string[]) => Promise<void | firebase.firestore.DocumentReference<firebase.firestore.DocumentData>>;
+  subscribeToSet: (set: string) => Promise<string[] | undefined>;
+  unsubscribeFromSet: (set: string) => Promise<string[] | undefined>;
+
   logout: () => Promise<void>;
   loading: boolean;
   loadingUserData: boolean;
@@ -28,6 +32,7 @@ const FirebaseContext = createContext<IFirebaseContext | null>(null);
 const firebaseInit = firebase.initializeApp(firebaseConfig);
 const auth = firebaseInit.auth();
 const firestore = firebaseInit.firestore();
+const usersCollection = firestore.collection("users");
 const facebookProvider = new firebase.auth.FacebookAuthProvider();
 const twitterProvider = new firebase.auth.TwitterAuthProvider();
 
@@ -36,10 +41,11 @@ var userDataConveter = {
     return {
       uid: user.uid,
       tags: user.tags,
+      sets: user.sets,
     };
   },
   fromFirestore: (snapshot: any, options: any) => {
-    const data: SharedTypes.User = snapshot.data(options);
+    const data: SharedTypes.UserData = snapshot.data(options);
     return data;
   },
 };
@@ -67,47 +73,77 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
     return await auth.signInWithPopup(twitterProvider);
   };
 
+  const register = async (email: string, password: string) => auth.createUserWithEmailAndPassword(email, password);
+
+  const resetUserPassword = async (email: string) => auth.sendPasswordResetEmail(email);
+
   const logout = async () => {
     return auth.signOut();
   };
 
-  const register = async (email: string, password: string) => auth.createUserWithEmailAndPassword(email, password);
-
   const setTags = async (tags: string[]) => {
     if (currentUser) {
-      return firestore.collection("users").doc(currentUser.uid).update({ tags });
+      return usersCollection.doc(currentUser.uid).update({ tags });
     }
   };
 
   const setToken = async (currentToken: string, user: firebase.User) => {
     if (user?.uid) {
-      getUserData().then((userData) => {
-        const data = userData?.data();
-        let newTokens: string[] = [];
-        if (data?.currentToken) {
-          if (data?.currentToken.length >= 3) {
-            newTokens = [currentToken, data.currentToken[0], data.currentToken[1]];
-          } else {
-            newTokens = [currentToken, ...data.currentToken];
-          }
+      getUserData(user.uid).then((userData) => {
+        const data = userData.data();
+        if (data?.currentToken!?.length >= 3) {
+          const newTokens = [currentToken, data!.currentToken[0], data!.currentToken[1]];
+          return usersCollection.doc(user.uid).update({ tokens: newTokens ? newTokens : [currentToken] });
+        } else if (data?.currentToken) {
+          const newTokens = [currentToken, ...data.currentToken];
+          return usersCollection.doc(user.uid).update({ tokens: newTokens ? newTokens : [currentToken] });
         }
-        newTokens = newTokens.length > 0 ? newTokens : [currentToken];
-        return firestore.collection("users").doc(user.uid).update({ tokens: newTokens });
       });
     }
   };
 
-  const getUserData = async () => {
+  const getUserData = async (uid: string) => {
+    return usersCollection
+      .doc(uid)
+      .withConverter(userDataConveter)
+      .get()
+      .then((data) => {
+        setLoadingUserData(false);
+        return data;
+      });
+  };
+
+  const subscribeToSet = async (set: string) => {
     if (currentUser) {
-      return firestore
-        .collection("users")
-        .doc(currentUser.uid)
-        .withConverter(userDataConveter)
-        .get()
-        .then((data) => {
-          setLoadingUserData(false);
-          return data;
-        });
+      const userSets = await getUserData(currentUser.uid);
+      const data = userSets.data();
+      if (data?.sets) {
+        const sets = [...data.sets, set];
+        const newSets = Array.from(new Set(sets));
+        usersCollection.doc(currentUser.uid).withConverter(userDataConveter).update({ sets: newSets });
+        return newSets;
+      } else {
+        usersCollection
+          .doc(currentUser.uid)
+          .withConverter(userDataConveter)
+          .update({ sets: [set] });
+        return [set];
+      }
+    }
+  };
+
+  const unsubscribeFromSet = async (set: string) => {
+    if (currentUser) {
+      const userSets = await getUserData(currentUser.uid);
+      const data = userSets.data();
+      if (data?.sets) {
+        const sets = [...data.sets];
+        if (sets.includes(set)) {
+          const newSets = sets.filter((x) => x !== set);
+          usersCollection.doc(currentUser.uid).withConverter(userDataConveter).update({ sets: newSets });
+          return newSets;
+        }
+      }
     }
   };
 
@@ -116,14 +152,15 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
       setCurrentUser(user);
       setLoading(false);
       if (user) {
-        // setIsNewUser(user.metadata.creationTime === user.metadata.lastSignInTime);
-        firestore
-          .collection("users")
+        console.log(user.metadata.creationTime);
+        console.log(user.metadata.lastSignInTime);
+        setIsNewUser(user.metadata.creationTime === user.metadata.lastSignInTime);
+        usersCollection
           .doc(user?.uid)
           .get()
           .then((x) => {
             if (!x.exists) {
-              firestore.collection("users").doc(user?.uid).set({});
+              usersCollection.doc(user?.uid).set({});
             }
           });
 
@@ -158,8 +195,11 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
         loginWithFacebook,
         loginWithTwitter,
         register,
-        setTags,
+        resetUserPassword,
         getUserData,
+        setTags,
+        subscribeToSet,
+        unsubscribeFromSet,
         logout,
       }}
     >

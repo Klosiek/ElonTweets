@@ -14,6 +14,7 @@ import { useToast } from "@chakra-ui/toast";
 import { useFirebase } from "providers/FirebaseProvider";
 import { useHistory } from "react-router";
 import { RoutesEnum } from "shared/enums";
+import ParseErrorMessage from "shared/ParseErrorMessage";
 
 const validationSchema = Yup.object().shape({
   email: Yup.string().email("The email is incorrect").required("Please enter your email"),
@@ -35,22 +36,13 @@ const LoginPage = () => {
     onSubmit: async (values) => {
       validateForm();
       if (isValid) {
-        loginWithEmail(values.email, values.password)
-          // .then((res) => {
-          //   !res &&
-          //     toast({
-          //       description: "You must to verify your email adress before logging in!",
-          //       status: "error",
-          //       isClosable: true,
-          //     });
-          // })
-          .catch(() => {
-            toast({
-              description: "Incorrect credensials provided!",
-              status: "error",
-              isClosable: true,
-            });
+        loginWithEmail(values.email, values.password).catch((err) => {
+          toast({
+            description: ParseErrorMessage(err),
+            status: "error",
+            isClosable: true,
           });
+        });
       }
     },
   });
@@ -70,21 +62,21 @@ const LoginPage = () => {
         <Box rounded="lg" shadow="lg" maxW="xl" mx="auto" p={12} bg={mode("panelLight", "panelDark")}>
           <Flex justifyContent="space-between" flexDir="column" h="xl">
             <Heading textAlign="left" size="md">
-              ElonTweets
+              Filtrelon
             </Heading>
             <Box>
               <Heading textAlign="center" fontWeight="extrabold" size="xl">
-                Welcome to ElonTweets
+                Welcome to Filtrelon
               </Heading>
               <Heading color="secondaryTextDark" textAlign="left" size="sm">
-                Enter your info to get started
+                Welcome back!
               </Heading>
             </Box>
             <Button
               onClick={() =>
-                loginWithTwitter().catch(() => {
+                loginWithTwitter().catch((err) => {
                   toast({
-                    description: "Can't login with twitter your account!",
+                    description: ParseErrorMessage(err),
                     status: "error",
                     isClosable: true,
                   });
@@ -97,9 +89,9 @@ const LoginPage = () => {
             </Button>
             <Button
               onClick={() =>
-                loginWithFacebook().catch(() => {
+                loginWithFacebook().catch((err) => {
                   toast({
-                    description: "Can't login with facebook your account!",
+                    description: ParseErrorMessage(err),
                     status: "error",
                     isClosable: true,
                   });
@@ -130,7 +122,13 @@ const LoginPage = () => {
               <FormControl h="140px" isInvalid={!!errors.password}>
                 <Flex justify="space-between">
                   <FormLabel>Password</FormLabel>
-                  <Box color={mode("blue.600", "blue.200")} fontWeight="semibold" fontSize="sm">
+                  <Box
+                    onClick={() => history.push(RoutesEnum.ForgotPassword)}
+                    color={mode("blue.600", "blue.200")}
+                    fontWeight="semibold"
+                    fontSize="sm"
+                    cursor="pointer"
+                  >
                     Forgot Password?
                   </Box>
                 </Flex>

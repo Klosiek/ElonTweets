@@ -1,7 +1,7 @@
-export type UserData = User | undefined;
-export interface User {
+export interface UserData {
   tags: string[];
   currentToken: string[];
+  sets: string[];
 }
 export interface Set {
   title: string;
