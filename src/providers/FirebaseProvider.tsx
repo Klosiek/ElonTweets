@@ -1,7 +1,10 @@
 import { createContext, ReactElement, useContext, useEffect, useState } from "react";
 import firebase from "firebase";
-import "firebase/auth";
+import "@firebase/messaging";
+import "@firebase/auth";
+import "@firebase/firestore";
 import * as SharedTypes from "shared/types";
+
 interface IFirebaseContext {
   currentUser: firebase.User | null;
   loginWithEmail: (email: string, password: string) => Promise<firebase.auth.UserCredential>;
