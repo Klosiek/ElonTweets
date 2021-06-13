@@ -1,13 +1,14 @@
 import { Box, Flex, Heading, Text } from "@chakra-ui/layout";
 import { useColorModeValue as mode } from "@chakra-ui/color-mode";
-import * as Types from "./Set.types";
+import { Skeleton } from "@chakra-ui/react";
 import { Image } from "@chakra-ui/image";
 import { Button } from "@chakra-ui/button";
+import * as Types from "./Set.types";
 import { useEffect, useState } from "react";
 import { useFirebase } from "providers/FirebaseProvider";
 
 const Set = ({ title, topic, img }: Types.Props) => {
-  const { currentUser, getUserData, subscribeToSet, unsubscribeFromSet } = useFirebase();
+  const { currentUser, loadingUserData, getUserData, subscribeToSet, unsubscribeFromSet } = useFirebase();
   const [isUserSubscribingToSet, setIsUserSubscribingToSet] = useState(false);
 
   useEffect(() => {
@@ -34,33 +35,37 @@ const Set = ({ title, topic, img }: Types.Props) => {
 
   return (
     <Box mt="8px">
-      <Flex
-        rounded="xl"
-        justifyContent="space-between"
-        flexDir="column"
-        p="24px"
-        boxSize="350px"
-        bgColor={mode("panelLight", "panelDark")}
-      >
-        <Flex justifyContent="space-between">
-          <Heading>{title}</Heading>
-          <Box>
-            <Image boxSize="80px" src={img} />
-          </Box>
-        </Flex>
-        <Box>
-          <Text>{topic}</Text>
-        </Box>
-        <Button
-          variant={isUserSubscribingToSet ? "outline" : "solid"}
-          onClick={async () => {
-            handleClick();
-          }}
-          justifySelf="flex-end"
+      {loadingUserData ? (
+        <Skeleton boxSize="350px" rounded="xl" />
+      ) : (
+        <Flex
+          rounded="xl"
+          justifyContent="space-between"
+          flexDir="column"
+          p="24px"
+          boxSize="350px"
+          bgColor={mode("panelLight", "panelDark")}
         >
-          {isUserSubscribingToSet ? "Unsubscribe" : "Subscribe"}
-        </Button>
-      </Flex>
+          <Flex justifyContent="space-between">
+            <Heading>{title}</Heading>
+            <Box>
+              <Image boxSize="80px" src={img} />
+            </Box>
+          </Flex>
+          <Box>
+            <Text>{topic}</Text>
+          </Box>
+          <Button
+            variant={isUserSubscribingToSet ? "outline" : "solid"}
+            onClick={async () => {
+              handleClick();
+            }}
+            justifySelf="flex-end"
+          >
+            {isUserSubscribingToSet ? "Unsubscribe" : "Subscribe"}
+          </Button>
+        </Flex>
+      )}
     </Box>
   );
 };

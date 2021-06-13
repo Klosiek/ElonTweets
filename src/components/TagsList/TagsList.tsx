@@ -63,40 +63,9 @@ const TagsList = () => {
           }}
         />
       </InputGroup>
-      {/* <Tag colorScheme="cyan">
-        <TagLeftIcon
-          onClick={() => {
-            if (!tags.includes(newTag) && newTag) {
-              addNewTag(newTag);
-              setNewTag("");
-            }
-          }}
-          boxSize="36px"
-          cursor="pointer"
-        >
-          <FiPlus size="24px" />
-        </TagLeftIcon>
-
-        <TagLabel>
-          <Input
-            size="md"
-            onKeyDown={(key) => {
-              if (key.key === "Enter") {
-                if (!tags.includes(newTag) && newTag) {
-                  addNewTag(newTag);
-                  setNewTag("");
-                }
-              }
-            }}
-            value={newTag}
-            onChange={(value) => setNewTag(value.currentTarget.value)}
-          ></Input>
-        </TagLabel>
-      </Tag> */}
-
       <Flex flexWrap="wrap" p={[null, "8px"]}>
-        {false ? (
-          <SkeletonText isLoaded={loadingUserData} w="100%" mt="4" noOfLines={6} spacing="5" />
+        {loadingUserData ? (
+          <SkeletonText w="100%" mt="4" noOfLines={6} spacing="5" />
         ) : (
           tags.map((tag) => (
             <Tag
