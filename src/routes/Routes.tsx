@@ -9,6 +9,7 @@ import { CircularProgress } from "@chakra-ui/progress";
 import { Flex } from "@chakra-ui/layout";
 import RegisterPage from "pages/RegisterPage";
 import ForgotPassword from "pages/ForgotPassword";
+import PrivacyPolicy from "pages/PrivacyPolicy";
 
 const Routes = () => {
   const { loading } = useFirebase();
@@ -21,6 +22,7 @@ const Routes = () => {
       <PublicRoute path={RoutesEnum.Login} component={LoginPage} exact />
       <PublicRoute path={RoutesEnum.Register} component={RegisterPage} exact />
       <PublicRoute path={RoutesEnum.ForgotPassword} component={ForgotPassword} exact />
+      <PublicRoute path={RoutesEnum.PrivacyPolicy} component={PrivacyPolicy} exact />
       <PrivateRoute component={HomePage} exact />
     </Switch>
   );

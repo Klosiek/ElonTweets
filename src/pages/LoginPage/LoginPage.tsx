@@ -159,8 +159,17 @@ const LoginPage = () => {
               <Button onClick={submitForm} colorScheme="blue" size="lg" fontSize="md" disabled={!isValid}>
                 Sign in
               </Button>
-              <Flex color={"blue.200"} fontWeight="semibold" fontSize="sm" justifyContent="flex-end">
+              <Flex color={"blue.200"} fontSize="sm" justifyContent="space-between">
                 <Box
+                  fontWeight="thin"
+                  _hover={{ textDecoration: "underline" }}
+                  cursor="pointer"
+                  onClick={() => history.push(RoutesEnum.PrivacyPolicy)}
+                >
+                  Privacy policy
+                </Box>
+                <Box
+                  fontWeight="semi-bold"
                   _hover={{ textDecoration: "underline" }}
                   cursor="pointer"
                   onClick={() => history.push(RoutesEnum.Register)}
