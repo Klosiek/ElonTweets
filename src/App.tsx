@@ -1,8 +1,4 @@
-import { useEffect } from "react";
-import { ChakraProvider, extendTheme } from "@chakra-ui/react";
-import { ColorModeSwitcher } from "./ColorModeSwitcher";
-import { Logo } from "./Logo";
-import firebase from "firebase";
+import { ChakraProvider } from "@chakra-ui/react";
 import { BrowserRouter } from "react-router-dom";
 import Routes from "./routes/Routes";
 import { theme } from "./shared/styles/theme";
