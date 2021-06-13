@@ -4,8 +4,6 @@ import { RoutesEnum } from "shared/enums";
 
 const PublicRoute = (props: RouteProps) => {
   const { currentUser, loading } = useFirebase();
-  if (currentUser && currentUser?.providerData[0]) console.log();
-  console.dir(currentUser);
 
   return !loading &&
     currentUser?.providerData[0] &&

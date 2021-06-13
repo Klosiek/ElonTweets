@@ -60,10 +60,6 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
   const [currentUser, setCurrentUser] = useState<firebase.User | null>(null);
   const messaging = firebase.messaging();
 
-  messaging.onMessage((payload) => {
-    console.dir(payload);
-  });
-
   const loginWithEmail = async (email: string, password: string) => {
     return await auth.signInWithEmailAndPassword(email, password);
   };
@@ -155,8 +151,6 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
       setCurrentUser(user);
       setLoading(false);
       if (user) {
-        console.log(user.metadata.creationTime);
-        console.log(user.metadata.lastSignInTime);
         setIsNewUser(user.metadata.creationTime === user.metadata.lastSignInTime);
         usersCollection
           .doc(user?.uid)
@@ -175,7 +169,6 @@ const FirebaseProvider = ({ children }: { children: ReactElement }) => {
           .then((token) => {
             if (token) {
               setToken(token, user);
-              console.dir(token);
             }
           })
           .catch(function (err) {
